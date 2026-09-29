@@ -1,15 +1,14 @@
 <!--
 Sync Impact Report
-- Version change: N/A → 1.0.0
+- Version change: 1.0.0 → 1.0.1
 - Modified principles:
-  - Template Principle 1 → I. Stable Core First
-  - Template Principle 2 → II. Plugin-Driven Extensibility
-  - Template Principle 3 → III. Clean Boundaries and Dependency Direction
-  - Template Principle 4 → IV. Durable Business Truth
-  - Template Principle 5 → V. Simplicity and Performance over Theoretical Extensibility
+  - I. Stable Core First → I. Stable Core of Cohesive Modules
+  - II. Plugin-Driven Extensibility → II. Plugin-Driven Extensibility with Runtime Discipline
+  - III. Clean Boundaries and Dependency Direction → III. Clean Boundaries and Dependency Direction
+  - IV. Durable Business Truth → IV. Durable Business Truth and Replaceable Infrastructure
+  - V. Simplicity and Performance over Theoretical Extensibility → V. Simplicity and Performance over Theoretical Extensibility
 - Added sections:
-  - Architecture, Modularity, and Governance Requirements
-  - Operational, Security, Quality, and Evolution Requirements
+  - None
 - Removed sections:
   - None
 - Follow-up TODOs:
@@ -20,21 +19,24 @@ Sync Impact Report
 
 ## Core Principles
 
-### I. Stable Core First
-Essential business capabilities MUST remain in the Core and MUST be modeled as cohesive
-modules with clear responsibilities. Features MUST be placed in the smallest appropriate
-boundary (Core, Module, Plugin, Adapter, or Use Case). Core functionality MUST NOT be
-moved to plugins without concrete architectural benefit.
+### I. Stable Core of Cohesive Modules
+Essential business capabilities MUST remain in the Core, and the Core MUST be composed of
+cohesive Modules with clear responsibilities. Features MUST be placed in the smallest
+appropriate boundary (Core, Module, Plugin, Adapter, or Use Case). Core functionality MUST
+NOT be moved to plugins without concrete architectural benefit.
 
-Rationale: core commerce correctness depends on stable, explicit ownership of business logic.
+Rationale: core commerce correctness depends on stable ownership of business logic, not on a
+single package layout.
 
-### II. Plugin-Driven Extensibility
-Optional, replaceable, or integration-specific capabilities SHOULD be implemented as Plugins.
-Every Plugin MUST declare a versioned manifest with id, version, permissions, lifecycle,
-and contracts. Plugins MUST communicate only through defined Core/Application contracts and
-MUST NOT directly depend on other plugin implementations.
+### II. Plugin-Driven Extensibility with Runtime Discipline
+Optional, replaceable, integration-specific, or independently extensible capabilities SHOULD be
+implemented as Plugins. Every Plugin MUST declare a versioned manifest with id, version,
+permissions, lifecycle, and contracts. Plugins MUST communicate only through defined
+Core/Application contracts and MUST NOT directly depend on other plugin implementations.
+Plugin architecture MUST NOT introduce unnecessary critical-path work.
 
-Rationale: controlled extension points enable flexibility without coupling runtime behavior.
+Rationale: controlled extension points enable flexibility without coupling or avoidable runtime
+overhead.
 
 ### III. Clean Boundaries and Dependency Direction
 The system MUST follow Clean Architecture with explicit Domain, Application,
@@ -44,11 +46,12 @@ ports/use cases implemented by Infrastructure adapters.
 
 Rationale: strict dependency direction preserves replaceability and testability.
 
-### IV. Durable Business Truth
+### IV. Durable Business Truth and Replaceable Infrastructure
 PostgreSQL MUST be the source of truth for persistent business state, with Neon treated as a
-replaceable provider. Redis MUST NOT be authoritative for business correctness and MUST be
-accessed behind replaceable abstractions. System correctness MUST hold when cache is absent,
-expired, or unavailable.
+replaceable PostgreSQL provider. Redis MUST NOT be authoritative for business correctness and
+MUST be accessed behind replaceable abstractions. System correctness MUST hold when cache is
+absent, expired, or unavailable, and Redis failure MUST NOT invalidate persistent business
+state.
 
 Rationale: durable truth prevents correctness failures caused by ephemeral infrastructure.
 
@@ -63,10 +66,12 @@ Rationale: practical, measurable outcomes take precedence over speculative abstr
 ## Architecture, Modularity, and Governance Requirements
 
 ### Normative Definitions
-- Core: Essential business capabilities required by the platform.
+- Core: Essential business capabilities required by the platform, organized as cohesive
+  internal Modules.
 - Module: A cohesive internal unit within the Core.
 - Plugin: An optional, replaceable, or integration-specific extension.
-- Adapter: An infrastructure implementation of an Application contract.
+- Infrastructure Dependency: An external framework, platform, service, or provider.
+- Adapter: An infrastructure-side implementation of an Application Port/contract.
 - Port: An abstraction defined by the Application layer.
 - Contract: A versioned interface, schema, or event used between boundaries.
 - Source of Truth: The authoritative persistent source of business state.
@@ -79,8 +84,8 @@ Rationale: practical, measurable outcomes take precedence over speculative abstr
 - Route handlers, server actions, and UI components MUST NOT contain business logic.
 - Presentation MUST depend on Application contracts; Infrastructure MUST implement
   Application ports.
-- Verification MUST include dependency boundary linting, dependency graph review, and
-  architecture review.
+- Verification MUST include automated or reviewable dependency-boundary checks,
+  dependency analysis, and architecture review.
 
 ### Modularity Requirements (MOD-01)
 - The system MUST be modular and each feature MUST belong to the smallest correct boundary.
@@ -91,17 +96,22 @@ Rationale: practical, measurable outcomes take precedence over speculative abstr
 
 ### Plugin Requirements (PLG-01)
 - Plugin resolution MUST NOT require loading/scanning every plugin per request.
+- Plugin resolution MUST resolve only capabilities required by the current operation.
 - Plugins MUST NOT load on the critical path unless required.
 - Plugins MUST operate under explicit permissions and SHOULD be independently disableable.
 - Plugin discovery SHOULD be lazy; contract versioning SHOULD be independent when practical.
+- Plugin resolution MAY use caching where beneficial.
 - Verification MUST include manifest validation, permission tests, contract compatibility
-  tests, and plugin resolution performance tests.
+  tests, and plugin-resolution performance checks.
 
 ### Infrastructure Requirements (INF-01)
 - Next.js, Clerk, Neon, Redis, Vercel Queues, AI providers, and external APIs MUST be
-  treated as infrastructure adapters.
-- Domain/Application MUST depend only on abstractions; vendor types MUST NOT leak inward.
+  treated as infrastructure dependencies/providers accessed through adapters.
+- Domain/Application MUST depend only on abstractions; vendor-specific types MUST NOT leak
+  into Domain or Application.
 - Replacing an adapter MUST NOT require Domain business-rule changes.
+- Clerk integration MUST be isolated behind an identity/authentication boundary defined by
+  Application contracts.
 - Adapters SHOULD provide fakes/test doubles where practical.
 - Verification MUST include ports inventory, import boundary checks, and adapter replacement
   tests.
@@ -113,17 +123,20 @@ Rationale: practical, measurable outcomes take precedence over speculative abstr
   infrastructure concerns only if loss cannot corrupt business truth.
 - Authoritative business state MUST NOT exist only in Redis.
 - Correctness MUST NOT depend on a Redis lock or cache entry.
+- Cache misses MUST NOT make the system incorrect.
+- Redis-based rate limiting MAY fail open or fail closed according to application security
+  policy, but MUST NOT corrupt business state.
 - Verification MUST include cache-off tests, data ownership matrix, transaction review, and
   persistence tests.
 
 ### Async Job Requirements (ASY-01)
-- Vercel Queues MUST remain an infrastructure concern.
+- Vercel Queues MUST remain an infrastructure dependency used through adapters.
 - Application MUST define job contracts.
 - Every job MUST define idempotency, failure behavior, and timeout behavior.
 - Retry behavior MUST be defined for retryable jobs; side-effecting jobs SHOULD be
   idempotent.
-- Outbox and DLQ patterns SHOULD be used where consistency and durable failure handling
-  require them.
+- Outbox and DLQ patterns SHOULD be used when consistency and durable failure handling
+  requirements justify them.
 - Verification MUST include job contract tests, retry tests, failure injection, and
   idempotency tests.
 
@@ -140,6 +153,8 @@ Rationale: practical, measurable outcomes take precedence over speculative abstr
 ### MVP Discipline (MVP-01)
 - MVP scope MUST prioritize core commerce and customer communication.
 - Features MUST NOT be implemented before required.
+- Architecture choices MUST avoid forcing speculative integrations, plugins, distributed
+  patterns, or operational complexity before MVP necessity.
 - Specs SHOULD define explicit non-goals; feature flags SHOULD gate controlled rollout when
   needed.
 - Verification MUST include scope review, non-goals review, and feature audit.
@@ -195,4 +210,4 @@ logic, or excessive abstraction without measurable benefit.
 - Every constitutional principle MUST have a defined verification method and critical
   architectural decisions MUST be reviewable via checklists, tests, or automation.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-29 | **Last Amended**: 2026-09-29
+**Version**: 1.0.1 | **Ratified**: 2026-09-29 | **Last Amended**: 2026-09-29
