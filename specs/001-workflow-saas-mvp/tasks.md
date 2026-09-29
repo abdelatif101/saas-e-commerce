@@ -81,18 +81,18 @@
 
 ### Tests for User Story 2
 
-- [ ] T028 [P] [US2] Add contract tests for member invite, access patch, and workflow grant/revoke endpoints in `project-code/tests/contract/us2/member-access.contract.test.ts`
-- [ ] T029 [P] [US2] Add integration tests for cross-workflow deny behavior and access update propagation in `project-code/tests/integration/us2/workflow-access-controls.test.ts`
+- [x] T028 [P] [US2] Add contract tests for member invite, access patch, and workflow grant/revoke endpoints in `project-code/tests/contract/us2/member-access.contract.test.ts`
+- [x] T029 [P] [US2] Add integration tests for cross-workflow deny behavior and access update propagation in `project-code/tests/integration/us2/workflow-access-controls.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T030 [P] [US2] Implement Member and Role domain models in `project-code/src/core/account/domain/member.ts` and `project-code/src/core/account/domain/role.ts` with constraints `Default roles exist for each account`, `Owner role includes owner-only capabilities`, and role names `Owner/Admin/Member`
-- [ ] T031 [P] [US2] Implement PermissionGrant and WorkflowAccessGrant domain models in `project-code/src/core/authorization/domain/permission-grant.ts` and `project-code/src/core/workflow/domain/workflow-access-grant.ts` with constraints `Capability must be from allowed MVP capability set`, `Duplicate grants for same member+capability prevented`, `Member and workflow must belong to same account`, and `Access grant required before workflow resource operations`
-- [ ] T032 [US2] Implement member management services (invite/remove/assign role/assign permissions) in `project-code/src/core/account/application/manage-members.ts` enforcing `Cannot remove sole Owner without ownership transfer operation`
-- [ ] T033 [US2] Implement workflow access grant/revoke service in `project-code/src/core/workflow/application/manage-workflow-access.ts`
-- [ ] T034 [US2] Implement API handlers for member access contracts in `project-code/src/app/api/accounts/[accountId]/members/invitations/route.ts`, `project-code/src/app/api/accounts/[accountId]/members/[memberId]/access/route.ts`, and `project-code/src/app/api/accounts/[accountId]/workflows/[workflowId]/access/[memberId]/route.ts`
-- [ ] T035 [US2] Implement audit event recording for sensitive membership/access changes in `project-code/src/core/account/application/audit-member-actions.ts` and `project-code/src/core/workflow/application/audit-workflow-access.ts` with rule `Required for sensitive member/access/authorization and operational actions`
-- [ ] T036 [US2] Add US2 E2E scenario from quickstart Scenario 2 in `project-code/tests/e2e/us2/member-permission-workflow-access.e2e.test.ts`
+- [x] T030 [P] [US2] Implement Member and Role domain models in `project-code/src/core/account/domain/member.ts` and `project-code/src/core/account/domain/role.ts` with constraints `Default roles exist for each account`, `Owner role includes owner-only capabilities`, and role names `Owner/Admin/Member`
+- [x] T031 [P] [US2] Implement PermissionGrant and WorkflowAccessGrant domain models in `project-code/src/core/authorization/domain/permission-grant.ts` and `project-code/src/core/workflow/domain/workflow-access-grant.ts` with constraints `Capability must be from allowed MVP capability set`, `Duplicate grants for same member+capability prevented`, `Member and workflow must belong to same account`, and `Access grant required before workflow resource operations`
+- [x] T032 [US2] Implement member management services (invite/remove/assign role/assign permissions) in `project-code/src/core/account/application/manage-members.ts` enforcing `Cannot remove sole Owner without ownership transfer operation`
+- [x] T033 [US2] Implement workflow access grant/revoke service in `project-code/src/core/workflow/application/manage-workflow-access.ts`
+- [x] T034 [US2] Implement API handlers for member access contracts in `project-code/src/app/api/accounts/[accountId]/members/invitations/route.ts`, `project-code/src/app/api/accounts/[accountId]/members/[memberId]/access/route.ts`, and `project-code/src/app/api/accounts/[accountId]/workflows/[workflowId]/access/[memberId]/route.ts`
+- [x] T035 [US2] Implement audit event recording for sensitive membership/access changes in `project-code/src/core/account/application/audit-member-actions.ts` and `project-code/src/core/workflow/application/audit-workflow-access.ts` with rule `Required for sensitive member/access/authorization and operational actions`
+- [x] T036 [US2] Add US2 E2E scenario from quickstart Scenario 2 in `project-code/tests/e2e/us2/member-permission-workflow-access.e2e.test.ts`
 
 **Checkpoint**: US2 independently validates team access governance and workflow isolation enforcement.
 
