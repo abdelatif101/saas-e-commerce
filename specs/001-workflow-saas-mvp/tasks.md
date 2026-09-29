@@ -52,22 +52,22 @@
 
 ### Tests for User Story 1
 
-- [ ] T015 [P] [US1] Add contract tests for `POST /api/accounts` and `POST /api/accounts/{accountId}/workflows` in `project-code/tests/contract/us1/account-workflow.contract.test.ts`
-- [ ] T016 [P] [US1] Add contract tests for `POST /api/workflows/{workflowId}/purchase-intents` and `POST /api/workflows/{workflowId}/orders` in `project-code/tests/contract/us1/commerce.contract.test.ts`
-- [ ] T017 [P] [US1] Add integration journey test (onboarding → product → conversation → intent → order) in `project-code/tests/integration/us1/onboarding-commerce-flow.test.ts`
+- [x] T015 [P] [US1] Add contract tests for `POST /api/accounts` and `POST /api/accounts/{accountId}/workflows` in `project-code/tests/contract/us1/account-workflow.contract.test.ts`
+- [x] T016 [P] [US1] Add contract tests for `POST /api/workflows/{workflowId}/purchase-intents` and `POST /api/workflows/{workflowId}/orders` in `project-code/tests/contract/us1/commerce.contract.test.ts`
+- [x] T017 [P] [US1] Add integration journey test (onboarding → product → conversation → intent → order) in `project-code/tests/integration/us1/onboarding-commerce-flow.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T018 [P] [US1] Implement Account and Subscription domain models in `project-code/src/core/account/domain/account.ts` and `project-code/src/core/account/domain/subscription.ts` with constraints `Account name required` and `maxWorkflows >= 1`
-- [ ] T019 [P] [US1] Implement Workflow domain model in `project-code/src/core/workflow/domain/workflow.ts` with constraints `Created only if subscription capacity available` and `Name required within account context`
-- [ ] T020 [P] [US1] Implement Product domain model in `project-code/src/core/commerce/products/domain/product.ts` with enum constraints `physical/digital` and rules `Name, type, and price required for sellable products` and `Public page only accessible when product is active/public`
-- [ ] T021 [P] [US1] Implement Customer domain model in `project-code/src/core/commerce/customers/domain/customer.ts` with enum constraint `guest/identified` and rules `Deduplication uses reliable identifiers when present (phone/email)` and `Guest can be promoted to identified customer`
-- [ ] T022 [P] [US1] Implement Conversation domain model in `project-code/src/core/commerce/conversations/domain/conversation.ts` with handler modes `human/ai` and rules `Manual response path always available` and `Handoff to human must be possible at all times`
-- [ ] T023 [P] [US1] Implement Order and OrderItem domain models in `project-code/src/core/commerce/orders/domain/order.ts` and `project-code/src/core/commerce/orders/domain/order-item.ts` with enum constraints `physical/digital` and `New/Processing/Completed/Cancelled`, and rules `Must include at least one order line item`, `Status transition rules enforced in application layer`, `Quantity > 0`, and `Product must belong to same workflow as order`
-- [ ] T024 [US1] Implement account/workflow application services in `project-code/src/core/account/application/create-account.ts` and `project-code/src/core/workflow/application/create-workflow.ts` enforcing `Workflow creation blocked when current active workflows reaches maxWorkflows`
-- [ ] T025 [US1] Implement commerce services (create product/customer/conversation/purchase intent/order) in `project-code/src/core/commerce/{products,customers,conversations,orders}/application/*.ts`
-- [ ] T026 [US1] Implement API handlers for account/workflow and commerce contracts in `project-code/src/app/api/accounts/route.ts`, `project-code/src/app/api/accounts/[accountId]/workflows/route.ts`, `project-code/src/app/api/workflows/[workflowId]/purchase-intents/route.ts`, and `project-code/src/app/api/workflows/[workflowId]/orders/route.ts`
-- [ ] T027 [US1] Add US1 E2E scenario from quickstart Scenario 1 and 3 in `project-code/tests/e2e/us1/onboarding-to-order.e2e.test.ts`
+- [x] T018 [P] [US1] Implement Account and Subscription domain models in `project-code/src/core/account/domain/account.ts` and `project-code/src/core/account/domain/subscription.ts` with constraints `Account name required` and `maxWorkflows >= 1`
+- [x] T019 [P] [US1] Implement Workflow domain model in `project-code/src/core/workflow/domain/workflow.ts` with constraints `Created only if subscription capacity available` and `Name required within account context`
+- [x] T020 [P] [US1] Implement Product domain model in `project-code/src/core/commerce/products/domain/product.ts` with enum constraints `physical/digital` and rules `Name, type, and price required for sellable products` and `Public page only accessible when product is active/public`
+- [x] T021 [P] [US1] Implement Customer domain model in `project-code/src/core/commerce/customers/domain/customer.ts` with enum constraint `guest/identified` and rules `Deduplication uses reliable identifiers when present (phone/email)` and `Guest can be promoted to identified customer`
+- [x] T022 [P] [US1] Implement Conversation domain model in `project-code/src/core/commerce/conversations/domain/conversation.ts` with handler modes `human/ai` and rules `Manual response path always available` and `Handoff to human must be possible at all times`
+- [x] T023 [P] [US1] Implement Order and OrderItem domain models in `project-code/src/core/commerce/orders/domain/order.ts` and `project-code/src/core/commerce/orders/domain/order-item.ts` with enum constraints `physical/digital` and `New/Processing/Completed/Cancelled`, and rules `Must include at least one order line item`, `Status transition rules enforced in application layer`, `Quantity > 0`, and `Product must belong to same workflow as order`
+- [x] T024 [US1] Implement account/workflow application services in `project-code/src/core/account/application/create-account.ts` and `project-code/src/core/workflow/application/create-workflow.ts` enforcing `Workflow creation blocked when current active workflows reaches maxWorkflows`
+- [x] T025 [US1] Implement commerce services (create product/customer/conversation/purchase intent/order) in `project-code/src/core/commerce/{products,customers,conversations,orders}/application/*.ts`
+- [x] T026 [US1] Implement API handlers for account/workflow and commerce contracts in `project-code/src/app/api/accounts/route.ts`, `project-code/src/app/api/accounts/[accountId]/workflows/route.ts`, `project-code/src/app/api/workflows/[workflowId]/purchase-intents/route.ts`, and `project-code/src/app/api/workflows/[workflowId]/orders/route.ts`
+- [x] T027 [US1] Add US1 E2E scenario from quickstart Scenario 1 and 3 in `project-code/tests/e2e/us1/onboarding-to-order.e2e.test.ts`
 
 **Checkpoint**: US1 delivers MVP onboarding-to-order flow and is testable independently.
 
