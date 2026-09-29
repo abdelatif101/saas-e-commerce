@@ -16,10 +16,10 @@
 
 **Purpose**: Create the planned project structure and baseline tooling under `project-code/`.
 
-- [ ] T001 Create feature module directories from plan structure in `project-code/src/core/{account,workflow,commerce/{products,customers,conversations,orders},authorization}/{domain,application,infrastructure}`, `project-code/src/plugins/{ai,telegram,integrations}`, and `project-code/src/shared/{contracts,jobs,observability}`
-- [ ] T002 Create route group directories in `project-code/src/app/(account)`, `project-code/src/app/(workflow)`, `project-code/src/app/api`, `project-code/src/app/public`, and `project-code/src/app/widget`
-- [ ] T003 [P] Create test suite directories in `project-code/tests/{unit,integration,contract,e2e}` and add per-suite README usage notes in each directory
-- [ ] T004 [P] Add architecture boundary guard configuration in `project-code/eslint.config.mjs` and document forbidden imports in `project-code/src/shared/contracts/architecture-boundaries.md`
+- [x] T001 Create feature module directories from plan structure in `project-code/src/core/{account,workflow,commerce/{products,customers,conversations,orders},authorization}/{domain,application,infrastructure}`, `project-code/src/plugins/{ai,telegram,integrations}`, and `project-code/src/shared/{contracts,jobs,observability}`
+- [x] T002 Create route group directories in `project-code/src/app/(account)`, `project-code/src/app/(workflow)`, `project-code/src/app/api`, `project-code/src/app/public`, and `project-code/src/app/widget`
+- [x] T003 [P] Create test suite directories in `project-code/tests/{unit,integration,contract,e2e}` and add per-suite README usage notes in each directory
+- [x] T004 [P] Add architecture boundary guard configuration in `project-code/eslint.config.mjs` and document forbidden imports in `project-code/src/shared/contracts/architecture-boundaries.md`
 
 ---
 
