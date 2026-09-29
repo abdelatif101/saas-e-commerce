@@ -2,136 +2,128 @@
 
 **Input**: Design documents from `/specs/001-workflow-saas-mvp/`
 
-**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md
+**Prerequisites**: `plan.md` (required), `spec.md` (required), `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `.specify/memory/constitution.md`
 
-**Tests**: Include unit, integration, contract, and E2E tests because the plan/constitution require testing pyramid coverage.
+**Tests**: Include unit, integration, contract, and E2E tests because `plan.md`, `quickstart.md`, and the constitution require testing-pyramid coverage.
 
-**Organization**: Tasks are grouped by user story so each story can be implemented and tested independently.
+**Organization**: Tasks are grouped by user story to keep each increment independently executable and independently verifiable.
 
-## Format: `[ID] [P?] [Story] Description`
+## Format: `[ID] [P?] [Story] Description with file path`
 
 ---
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Create the planned project structure and baseline tooling under `project-code/`.
+**Purpose**: Align the codebase scaffold and tooling with the approved modular-monolith structure.
 
-- [x] T001 Create feature module directories from plan structure in `project-code/src/core/{account,workflow,commerce/{products,customers,conversations,orders},authorization}/{domain,application,infrastructure}`, `project-code/src/plugins/{ai,telegram,integrations}`, and `project-code/src/shared/{contracts,jobs,observability}`
-- [x] T002 Create route group directories in `project-code/src/app/(account)`, `project-code/src/app/(workflow)`, `project-code/src/app/api`, `project-code/src/app/public`, and `project-code/src/app/widget`
-- [x] T003 [P] Create test suite directories in `project-code/tests/{unit,integration,contract,e2e}` and add per-suite README usage notes in each directory
-- [x] T004 [P] Add architecture boundary guard configuration in `project-code/eslint.config.mjs` and document forbidden imports in `project-code/src/shared/contracts/architecture-boundaries.md`
+- [ ] T001 Create/align module directories in `project-code/src/core/{account,workflow,commerce/{products,customers,conversations,orders},authorization}/{domain,application,infrastructure}`, `project-code/src/plugins/{ai,telegram,integrations}`, and `project-code/src/shared/{contracts,jobs,observability}`
+- [ ] T002 [P] Create/align app route directories in `project-code/src/app/(account)`, `project-code/src/app/(workflow)`, `project-code/src/app/api`, `project-code/src/app/public`, and `project-code/src/app/widget`
+- [ ] T003 [P] Create/align test suite directories in `project-code/tests/{unit,integration,contract,e2e}` and add suite README files in each directory
 
 ---
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Build mandatory cross-story foundations (tenancy, authorization pipeline, persistence contracts, plugin resolver, async contract).
+**Purpose**: Establish shared tenancy/authz/infrastructure contracts that every story depends on.
 
-**⚠️ CRITICAL**: No user story work starts before this phase is complete.
+**⚠️ CRITICAL**: No user story work starts before this phase completes.
 
-- [x] T005 Define shared core type contracts (`AccountId`, `WorkflowId`, `MemberId`, `Permission`, `RoleName`) in `project-code/src/shared/contracts/core-types.ts`
-- [x] T006 Implement authorization pipeline contract (identity → membership → role/permission → workflow access → resource permission) in `project-code/src/core/authorization/application/authorize-operation.ts`
-- [x] T007 [P] Implement workflow context guard that denies access when workflow scope is missing/mismatched in `project-code/src/core/workflow/application/require-workflow-context.ts`
-- [x] T008 [P] Implement plugin manifest and deterministic capability resolver (no full scan, load required capabilities only) in `project-code/src/plugins/integrations/plugin-manifest.ts` and `project-code/src/plugins/integrations/capability-resolver.ts`
-- [x] T009 [P] Implement async job envelope contract in `project-code/src/shared/jobs/job-envelope.ts` with fields `jobType`, `jobId`, `accountId`, `workflowId`, `idempotencyKey`, `payload`, `attempt`, `scheduledAt`
-- [x] T010 [P] Implement async retry policy contract (at-least-once, idempotent side effects, timeout, max attempts, backoff, dead-letter) in `project-code/src/shared/jobs/job-policy.ts`
-- [x] T011 Implement base entity ownership policy in `project-code/src/shared/contracts/resource-ownership.ts` enforcing account-scoped vs workflow-scoped separation
-- [x] T012 Implement data-model validation constants in `project-code/src/shared/contracts/data-model-constraints.ts` quoting verbatim: `maxWorkflows >= 1`; `Workflow creation blocked when current active workflows reaches maxWorkflows`; `Cannot remove sole Owner without ownership transfer operation`; `Default roles exist for each account`; `Owner role includes owner-only capabilities`; `Capability must be from allowed MVP capability set`; `Duplicate grants for same member+capability prevented`; `Created only if subscription capacity available`; `Name required within account context`; `Member and workflow must belong to same account`; `Access grant required before workflow resource operations`; `Name, type, and price required for sellable products`; `Public page only accessible when product is active/public`; `Deduplication uses reliable identifiers when present (phone/email)`; `Guest can be promoted to identified customer`; `Manual response path always available`; `Handoff to human must be possible at all times`; `Must include at least one order line item`; `Status transition rules enforced in application layer`; `Quantity > 0`; `Product must belong to same workflow as order`; `If enabled=false, manual conversation flow remains fully operational`; `Provider-specific secrets stored outside source code`; `Plugin operations must map to account member identity and permissions`; `Disconnected plugin cannot execute operations`; `Widget requests must resolve target workflow safely`; `Internal credentials never exposed to clients`; `Slug unique per workflow`; `Disabled page returns not available state`; `Required for sensitive member/access/authorization and operational actions`; `Must not store secrets in metadata`
-- [x] T013 Implement foundational unit tests for authorization pipeline and workflow guard in `project-code/tests/unit/foundation/authorization-pipeline.test.ts`
-- [x] T014 Implement foundational integration tests for plugin resolver and async job contracts in `project-code/tests/integration/foundation/plugin-and-jobs.test.ts`
+- [ ] T004 Define shared IDs/capabilities and ownership contracts in `project-code/src/shared/contracts/{core-types.ts,capabilities.ts,resource-ownership.ts}` preserving Account → Subscription → Members/Roles/Permissions → Workflow ownership sequencing
+- [ ] T005 Implement Prisma schema for account/workflow access foundations in `project-code/prisma/schema.prisma` with constraints `maxWorkflows >= 1`, `Account must always have exactly one current Owner member`, `Cannot remove sole Owner without ownership transfer operation`, `Default roles exist for each account`, `Owner role includes owner-only capabilities`, `Capability must be from allowed MVP capability set`, `Duplicate grants for same member+capability prevented`, `Created only if subscription capacity available`, and `Member and workflow must belong to same account`
+- [ ] T006 [P] Implement authz pipeline use case in `project-code/src/core/authorization/application/authorize-operation.ts` enforcing identity → membership → role/permission → workflow access → operation order
+- [ ] T007 [P] Implement infrastructure adapters for Clerk identity, Neon/PostgreSQL (Prisma), Redis, and Vercel Queues in `project-code/src/core/authorization/infrastructure/`, `project-code/src/shared/jobs/`, and `project-code/src/shared/observability/` without leaking vendor types into domain/application
+- [ ] T008 [P] Implement plugin manifest + deterministic capability resolver in `project-code/src/plugins/integrations/{plugin-manifest.ts,capability-resolver.ts}` with capability-scoped loading only
+- [ ] T009 Add foundational tests for authorization, workflow isolation, and plugin/job contracts in `project-code/tests/{unit,integration,contract}/foundation/`
 
-**Checkpoint**: Foundation ready for independent user story implementation.
+**Checkpoint**: Foundation ready; user stories can be implemented and validated independently.
 
 ---
 
 ## Phase 3: User Story 1 - Launch a workflow and start selling (Priority: P1) 🎯 MVP
 
-**Goal**: Enable onboarding flow from account creation to workflow creation, product setup, customer conversation, purchase intent, and order creation.
+**Goal**: Deliver onboarding-to-order flow in a single workflow.
 
-**Independent Test**: Create account + workflow, add product, start customer conversation, convert purchase intent to order within same workflow.
+**Independent Test**: Create account, create workflow, add product, receive conversation message, capture purchase intent, convert to order in the same workflow.
+
+**Acceptance Focus**: Satisfy FR-001, FR-002, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012.
 
 ### Tests for User Story 1
 
-- [x] T015 [P] [US1] Add contract tests for `POST /api/accounts` and `POST /api/accounts/{accountId}/workflows` in `project-code/tests/contract/us1/account-workflow.contract.test.ts`
-- [x] T016 [P] [US1] Add contract tests for `POST /api/workflows/{workflowId}/purchase-intents` and `POST /api/workflows/{workflowId}/orders` in `project-code/tests/contract/us1/commerce.contract.test.ts`
-- [x] T017 [P] [US1] Add integration journey test (onboarding → product → conversation → intent → order) in `project-code/tests/integration/us1/onboarding-commerce-flow.test.ts`
+- [ ] T010 [P] [US1] Add contract tests for `POST /api/accounts` and `POST /api/accounts/{accountId}/workflows` in `project-code/tests/contract/us1/account-workflow.contract.test.ts`
+- [ ] T011 [P] [US1] Add contract tests for `POST /api/workflows/{workflowId}/purchase-intents` and `POST /api/workflows/{workflowId}/orders` in `project-code/tests/contract/us1/commerce-order.contract.test.ts`
+- [ ] T012 [P] [US1] Add integration test for onboarding→product→conversation→intent→order in `project-code/tests/integration/us1/onboarding-to-order.test.ts`
 
 ### Implementation for User Story 1
 
-- [x] T018 [P] [US1] Implement Account and Subscription domain models in `project-code/src/core/account/domain/account.ts` and `project-code/src/core/account/domain/subscription.ts` with constraints `Account name required` and `maxWorkflows >= 1`
-- [x] T019 [P] [US1] Implement Workflow domain model in `project-code/src/core/workflow/domain/workflow.ts` with constraints `Created only if subscription capacity available` and `Name required within account context`
-- [x] T020 [P] [US1] Implement Product domain model in `project-code/src/core/commerce/products/domain/product.ts` with enum constraints `physical/digital` and rules `Name, type, and price required for sellable products` and `Public page only accessible when product is active/public`
-- [x] T021 [P] [US1] Implement Customer domain model in `project-code/src/core/commerce/customers/domain/customer.ts` with enum constraint `guest/identified` and rules `Deduplication uses reliable identifiers when present (phone/email)` and `Guest can be promoted to identified customer`
-- [x] T022 [P] [US1] Implement Conversation domain model in `project-code/src/core/commerce/conversations/domain/conversation.ts` with handler modes `human/ai` and rules `Manual response path always available` and `Handoff to human must be possible at all times`
-- [x] T023 [P] [US1] Implement Order and OrderItem domain models in `project-code/src/core/commerce/orders/domain/order.ts` and `project-code/src/core/commerce/orders/domain/order-item.ts` with enum constraints `physical/digital` and `New/Processing/Completed/Cancelled`, and rules `Must include at least one order line item`, `Status transition rules enforced in application layer`, `Quantity > 0`, and `Product must belong to same workflow as order`
-- [x] T024 [US1] Implement account/workflow application services in `project-code/src/core/account/application/create-account.ts` and `project-code/src/core/workflow/application/create-workflow.ts` enforcing `Workflow creation blocked when current active workflows reaches maxWorkflows`
-- [x] T025 [US1] Implement commerce services (create product/customer/conversation/purchase intent/order) in `project-code/src/core/commerce/{products,customers,conversations,orders}/application/*.ts`
-- [x] T026 [US1] Implement API handlers for account/workflow and commerce contracts in `project-code/src/app/api/accounts/route.ts`, `project-code/src/app/api/accounts/[accountId]/workflows/route.ts`, `project-code/src/app/api/workflows/[workflowId]/purchase-intents/route.ts`, and `project-code/src/app/api/workflows/[workflowId]/orders/route.ts`
-- [x] T027 [US1] Add US1 E2E scenario from quickstart Scenario 1 and 3 in `project-code/tests/e2e/us1/onboarding-to-order.e2e.test.ts`
+- [ ] T013 [P] [US1] Implement `Account` + `Subscription` domain/application flows in `project-code/src/core/account/{domain,application}/` with constraints `Account name required`, `maxWorkflows >= 1`, and `Workflow creation blocked when current active workflows reaches maxWorkflows`
+- [ ] T014 [P] [US1] Implement `Workflow` + `WorkflowAccessGrant` domain/application flows in `project-code/src/core/workflow/{domain,application}/` with constraints `Name required within account context` and `Access grant required before workflow resource operations`
+- [ ] T015 [P] [US1] Implement `Product` domain/application flows in `project-code/src/core/commerce/products/{domain,application}/` with constraints `Name, type, and price required for sellable products` and `Public page only accessible when product is active/public`
+- [ ] T016 [P] [US1] Implement `Customer` + `Conversation` domain/application flows in `project-code/src/core/commerce/{customers,conversations}/{domain,application}/` with constraints `Deduplication uses reliable identifiers when present (phone/email)`, `Guest can be promoted to identified customer`, `Manual response path always available`, and `Handoff to human must be possible at all times`
+- [ ] T017 [US1] Implement `Order` + `OrderItem` domain/application flows in `project-code/src/core/commerce/orders/{domain,application}/` with constraints `Must include at least one order line item`, `Status transition rules enforced in application layer`, `Quantity > 0`, and `Product must belong to same workflow as order`
+- [ ] T018 [US1] Implement US1 API handlers in `project-code/src/app/api/accounts/route.ts`, `project-code/src/app/api/accounts/[accountId]/workflows/route.ts`, `project-code/src/app/api/workflows/[workflowId]/{purchase-intents,orders}/route.ts` and add E2E scenario in `project-code/tests/e2e/us1/onboarding-to-order.e2e.test.ts`
 
-**Checkpoint**: US1 delivers MVP onboarding-to-order flow and is testable independently.
+**Checkpoint**: US1 is production-usable and independently testable as the MVP slice.
 
 ---
 
 ## Phase 4: User Story 2 - Control team access safely (Priority: P2)
 
-**Goal**: Support member lifecycle, role/permission assignment, and workflow access control with strict denial of unauthorized access.
+**Goal**: Deliver safe member collaboration with role/permission/workflow access enforcement.
 
-**Independent Test**: Invite members, assign role/permissions, grant workflow A only, verify allowed actions in A and denied in B.
+**Independent Test**: Invite members, assign different roles/permissions, grant Workflow A only, verify Workflow B denial and immediate access updates.
+
+**Acceptance Focus**: Satisfy FR-003, FR-004, FR-005, FR-006, FR-021, FR-022.
 
 ### Tests for User Story 2
 
-- [x] T028 [P] [US2] Add contract tests for member invite, access patch, and workflow grant/revoke endpoints in `project-code/tests/contract/us2/member-access.contract.test.ts`
-- [x] T029 [P] [US2] Add integration tests for cross-workflow deny behavior and access update propagation in `project-code/tests/integration/us2/workflow-access-controls.test.ts`
+- [ ] T019 [P] [US2] Add contract tests for member invite/access/workflow grant-revoke endpoints in `project-code/tests/contract/us2/member-access.contract.test.ts`
+- [ ] T020 [P] [US2] Add integration test for cross-workflow denial and grant/revoke propagation in `project-code/tests/integration/us2/workflow-access-controls.test.ts`
 
 ### Implementation for User Story 2
 
-- [x] T030 [P] [US2] Implement Member and Role domain models in `project-code/src/core/account/domain/member.ts` and `project-code/src/core/account/domain/role.ts` with constraints `Default roles exist for each account`, `Owner role includes owner-only capabilities`, and role names `Owner/Admin/Member`
-- [x] T031 [P] [US2] Implement PermissionGrant and WorkflowAccessGrant domain models in `project-code/src/core/authorization/domain/permission-grant.ts` and `project-code/src/core/workflow/domain/workflow-access-grant.ts` with constraints `Capability must be from allowed MVP capability set`, `Duplicate grants for same member+capability prevented`, `Member and workflow must belong to same account`, and `Access grant required before workflow resource operations`
-- [x] T032 [US2] Implement member management services (invite/remove/assign role/assign permissions) in `project-code/src/core/account/application/manage-members.ts` enforcing `Cannot remove sole Owner without ownership transfer operation`
-- [x] T033 [US2] Implement workflow access grant/revoke service in `project-code/src/core/workflow/application/manage-workflow-access.ts`
-- [x] T034 [US2] Implement API handlers for member access contracts in `project-code/src/app/api/accounts/[accountId]/members/invitations/route.ts`, `project-code/src/app/api/accounts/[accountId]/members/[memberId]/access/route.ts`, and `project-code/src/app/api/accounts/[accountId]/workflows/[workflowId]/access/[memberId]/route.ts`
-- [x] T035 [US2] Implement audit event recording for sensitive membership/access changes in `project-code/src/core/account/application/audit-member-actions.ts` and `project-code/src/core/workflow/application/audit-workflow-access.ts` with rule `Required for sensitive member/access/authorization and operational actions`
-- [x] T036 [US2] Add US2 E2E scenario from quickstart Scenario 2 in `project-code/tests/e2e/us2/member-permission-workflow-access.e2e.test.ts`
+- [ ] T021 [P] [US2] Implement `Member` + `Role` domain/application flows in `project-code/src/core/account/{domain,application}/` using default roles `Owner/Admin/Member` and owner-only invariants
+- [ ] T022 [P] [US2] Implement `PermissionGrant` + capability checks in `project-code/src/core/authorization/{domain,application}/` enforcing `Capability must be from allowed MVP capability set` and `Duplicate grants for same member+capability prevented`
+- [ ] T023 [US2] Implement workflow access management use cases in `project-code/src/core/workflow/application/manage-workflow-access.ts` enforcing same-account and explicit access requirements
+- [ ] T024 [US2] Implement member/access API handlers in `project-code/src/app/api/accounts/[accountId]/members/invitations/route.ts`, `project-code/src/app/api/accounts/[accountId]/members/[memberId]/access/route.ts`, and `project-code/src/app/api/accounts/[accountId]/workflows/[workflowId]/access/[memberId]/route.ts`
+- [ ] T025 [US2] Implement sensitive access audit logging in `project-code/src/core/account/application/audit-member-actions.ts`, `project-code/src/core/workflow/application/audit-workflow-access.ts`, and add E2E scenario in `project-code/tests/e2e/us2/member-access.e2e.test.ts`
 
-**Checkpoint**: US2 independently validates team access governance and workflow isolation enforcement.
+**Checkpoint**: US2 is independently testable and prevents unauthorized cross-workflow/team actions.
 
 ---
 
 ## Phase 5: User Story 3 - Communicate with customers using human or AI support (Priority: P3)
 
-**Goal**: Enable public product/chat entry points, manual and AI-assisted conversations, human handoff, and plugin-governed operations.
+**Goal**: Deliver public entry points, manual-first conversation handling, optional AI assist, and plugin-governed operations.
 
-**Independent Test**: Start conversations from public channels, respond manually, enable AI, hand off to human, verify workflow-safe behavior.
+**Independent Test**: Run manual conversation flow, enable AI assist, perform immediate human takeover, and validate plugin commands obey authorization/workflow boundaries.
+
+**Acceptance Focus**: Satisfy FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-019, FR-020.
 
 ### Tests for User Story 3
 
-- [ ] T037 [P] [US3] Add contract tests for public product and widget endpoints (`GET /public/{workflowRef}/products/{productSlug}`, `POST /widget/{workflowRef}/sessions`, `POST /widget/{workflowRef}/conversations/{conversationId}/messages`) in `project-code/tests/contract/us3/public-and-widget.contract.test.ts`
-- [ ] T038 [P] [US3] Add contract tests for plugin execution envelope and async job policy in `project-code/tests/contract/us3/plugin-jobs.contract.test.ts`
-- [ ] T039 [P] [US3] Add integration tests for AI optional mode, AI assist, and forced human handoff in `project-code/tests/integration/us3/ai-human-handoff.test.ts`
+- [ ] T026 [P] [US3] Add contract tests for public product and widget endpoints in `project-code/tests/contract/us3/public-widget.contract.test.ts`
+- [ ] T027 [P] [US3] Add contract tests for plugin operation envelope and async job contract in `project-code/tests/contract/us3/plugin-job.contract.test.ts`
+- [ ] T028 [P] [US3] Add integration tests for AI optional mode and human takeover in `project-code/tests/integration/us3/ai-handoff.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T040 [P] [US3] Implement AIConfiguration, PluginConnection, ChatWidgetConfiguration, PublicProductPage domain models in `project-code/src/core/workflow/domain/{ai-configuration.ts,plugin-connection.ts,chat-widget-configuration.ts,public-product-page.ts}` with constraints `If enabled=false, manual conversation flow remains fully operational`, `Plugin operations must map to account member identity and permissions`, `Disconnected plugin cannot execute operations`, `Widget requests must resolve target workflow safely`, `Internal credentials never exposed to clients`, `Slug unique per workflow`, and `Disabled page returns not available state`
-- [ ] T041 [US3] Implement public product page query service in `project-code/src/core/commerce/products/application/get-public-product-page.ts`
-- [ ] T042 [US3] Implement widget session and message services in `project-code/src/core/commerce/conversations/application/{start-widget-session.ts,append-widget-message.ts}` including origin/rate-limit checks
-- [ ] T043 [US3] Implement AI assist and handoff services in `project-code/src/plugins/ai/application/{assist-conversation.ts,handoff-to-human.ts}` preserving manual override invariant
-- [ ] T044 [US3] Implement Telegram/plugin command execution service in `project-code/src/plugins/telegram/application/execute-merchant-command.ts` using platform authorization pipeline
-- [ ] T045 [US3] Implement public/widget and plugin API handlers in `project-code/src/app/public/[workflowRef]/products/[productSlug]/route.ts`, `project-code/src/app/widget/[workflowRef]/sessions/route.ts`, `project-code/src/app/widget/[workflowRef]/conversations/[conversationId]/messages/route.ts`, and `project-code/src/app/api/plugins/telegram/commands/route.ts`
-- [ ] T046 [US3] Add US3 E2E scenarios from quickstart Scenario 4, 5, and 6 in `project-code/tests/e2e/us3/public-chat-ai-plugin.e2e.test.ts`
+- [ ] T029 [P] [US3] Implement `AIConfiguration`, `PluginConnection`, `ChatWidgetConfiguration`, and `PublicProductPage` domain/application flows in `project-code/src/core/workflow/{domain,application}/` with constraints `If enabled=false, manual conversation flow remains fully operational`, `Plugin operations must map to account member identity and permissions`, `Disconnected plugin cannot execute operations`, `Widget requests must resolve target workflow safely`, `Internal credentials never exposed to clients`, `Slug unique per workflow`, and `Disabled page returns not available state`
+- [ ] T030 [P] [US3] Implement public product and widget conversation services in `project-code/src/core/commerce/{products,conversations}/application/` for workflow-safe routing and customer identity progression
+- [ ] T031 [P] [US3] Implement AI assist/handoff services in `project-code/src/plugins/ai/application/{assist-conversation.ts,handoff-to-human.ts}` preserving always-available human override
+- [ ] T032 [P] [US3] Implement Telegram/plugin command execution service in `project-code/src/plugins/telegram/application/execute-merchant-command.ts` using platform authorization pipeline only
+- [ ] T033 [US3] Implement public/widget/plugin API handlers in `project-code/src/app/public/[workflowRef]/products/[productSlug]/route.ts`, `project-code/src/app/widget/[workflowRef]/sessions/route.ts`, `project-code/src/app/widget/[workflowRef]/conversations/[conversationId]/messages/route.ts`, and `project-code/src/app/api/plugins/telegram/commands/route.ts` plus E2E scenario in `project-code/tests/e2e/us3/public-ai-plugin.e2e.test.ts`
 
-**Checkpoint**: US3 independently validates public/customer communication and optional AI/plugin operations.
+**Checkpoint**: US3 is independently testable with AI enabled or disabled.
 
 ---
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-**Purpose**: Final hardening, performance checks, and end-to-end validation across stories.
+**Purpose**: Final hardening and full quickstart verification without expanding MVP scope.
 
-- [ ] T047 [P] Add performance assertions for p95 API latency, p95 purchase-intent flow latency, and query-count budget in `project-code/tests/integration/performance/critical-path-budgets.test.ts`
-- [ ] T048 [P] Add plugin resolver performance test ensuring no global plugin scan per request in `project-code/tests/unit/plugins/capability-resolver-performance.test.ts`
-- [ ] T049 Add security hardening checks (secret-safe logging, public endpoint abuse protection assertions) in `project-code/tests/integration/security/public-surface-security.test.ts`
-- [ ] T050 Run quickstart validation and record executed checklist evidence in `specs/001-workflow-saas-mvp/quickstart-validation-report.md`
+- [ ] T034 [P] Add performance budget tests in `project-code/tests/integration/performance/critical-path-budgets.test.ts` for p95 API latency, p95 purchase-intent flow latency, and bounded query counts
+- [ ] T035 [P] Add security/isolation regression tests for public surfaces and plugin authorization in `project-code/tests/integration/security/public-and-plugin-security.test.ts`
+- [ ] T036 Run full quickstart scenario validation and capture evidence in `specs/001-workflow-saas-mvp/quickstart-validation-report.md`
 
 ---
 
@@ -139,52 +131,70 @@
 
 ### Phase Dependencies
 
-- Phase 1 → no dependencies
-- Phase 2 → depends on Phase 1, blocks all user stories
-- Phase 3 (US1) → depends on Phase 2
-- Phase 4 (US2) → depends on Phase 2 (can run parallel with US1 after Phase 2, but priority order is US1 first)
-- Phase 5 (US3) → depends on Phase 2 (can run parallel with US2 after Phase 2, but priority order is US1 → US2 → US3)
-- Phase 6 → depends on completion of target stories
+- **Phase 1 (Setup)**: start immediately
+- **Phase 2 (Foundational)**: depends on Phase 1 and blocks all user stories
+- **Phase 3 (US1)**: depends on Phase 2
+- **Phase 4 (US2)**: depends on Phase 2; recommended after US1 for MVP sequencing
+- **Phase 5 (US3)**: depends on Phase 2; recommended after US2 for staged rollout
+- **Phase 6 (Polish)**: depends on selected user stories being complete
 
 ### User Story Dependencies
 
-- **US1 (P1)**: independent after foundations; MVP slice
-- **US2 (P2)**: independent after foundations; integrates with US1 authorization primitives but testable alone
-- **US3 (P3)**: independent after foundations; uses US1 commerce entities and foundational plugin/async contracts
+- **US1 (P1)**: independent after foundations; defines MVP release slice
+- **US2 (P2)**: independent after foundations; builds on shared authz/workflow access contracts
+- **US3 (P3)**: independent after foundations; builds on shared workflow/authz/plugin/job contracts
 
-### Within Each Story
+### Within Each User Story
 
-- Contract + integration tests first
-- Domain models before application services
-- Services before route handlers
-- Route handlers before E2E validation
+- Tests first (contract/integration), then domain/application, then API handlers, then E2E
+- Complete the story checkpoint before advancing to the next priority story
 
 ---
 
 ## Parallel Opportunities
 
-- **Phase 1**: T003, T004 parallel after T001/T002
-- **Phase 2**: T007/T008/T009/T010 parallel after T005/T006
-- **US1**: T015/T016/T017 in parallel; T018–T023 in parallel by domain area
-- **US2**: T028/T029 parallel; T030/T031 parallel
-- **US3**: T037/T038/T039 parallel; T040 with T041/T042 can be parallelized once model contracts exist
-- **Polish**: T047/T048/T049 parallel before T050
+- **Setup**: T002 and T003 parallel after T001
+- **Foundational**: T006, T007, T008 parallel after T004/T005
+- **US1**: T010/T011/T012 parallel; T013/T014/T015/T016 parallel; T017 after commerce models
+- **US2**: T019/T020 parallel; T021/T022 parallel
+- **US3**: T026/T027/T028 parallel; T029/T030/T031/T032 parallel
+- **Polish**: T034 and T035 parallel before T036
 
 ---
 
 ## Parallel Example: User Story 1
 
 ```bash
-Task: "T015 [US1] contract tests in project-code/tests/contract/us1/account-workflow.contract.test.ts"
-Task: "T016 [US1] contract tests in project-code/tests/contract/us1/commerce.contract.test.ts"
-Task: "T017 [US1] integration test in project-code/tests/integration/us1/onboarding-commerce-flow.test.ts"
+Task: "T010 [US1] contract tests in project-code/tests/contract/us1/account-workflow.contract.test.ts"
+Task: "T011 [US1] contract tests in project-code/tests/contract/us1/commerce-order.contract.test.ts"
+Task: "T012 [US1] integration test in project-code/tests/integration/us1/onboarding-to-order.test.ts"
 
-Task: "T018 [US1] account/subscription models in project-code/src/core/account/domain/"
-Task: "T019 [US1] workflow model in project-code/src/core/workflow/domain/workflow.ts"
-Task: "T020 [US1] product model in project-code/src/core/commerce/products/domain/product.ts"
-Task: "T021 [US1] customer model in project-code/src/core/commerce/customers/domain/customer.ts"
-Task: "T022 [US1] conversation model in project-code/src/core/commerce/conversations/domain/conversation.ts"
-Task: "T023 [US1] order/order-item models in project-code/src/core/commerce/orders/domain/"
+Task: "T013 [US1] account/subscription flow in project-code/src/core/account/{domain,application}/"
+Task: "T014 [US1] workflow/workflow-access flow in project-code/src/core/workflow/{domain,application}/"
+Task: "T015 [US1] product flow in project-code/src/core/commerce/products/{domain,application}/"
+Task: "T016 [US1] customer/conversation flow in project-code/src/core/commerce/{customers,conversations}/{domain,application}/"
+```
+
+## Parallel Example: User Story 2
+
+```bash
+Task: "T019 [US2] contract tests in project-code/tests/contract/us2/member-access.contract.test.ts"
+Task: "T020 [US2] integration test in project-code/tests/integration/us2/workflow-access-controls.test.ts"
+
+Task: "T021 [US2] member/role flow in project-code/src/core/account/{domain,application}/"
+Task: "T022 [US2] permission-grant flow in project-code/src/core/authorization/{domain,application}/"
+```
+
+## Parallel Example: User Story 3
+
+```bash
+Task: "T026 [US3] public/widget contract tests in project-code/tests/contract/us3/public-widget.contract.test.ts"
+Task: "T027 [US3] plugin/job contract tests in project-code/tests/contract/us3/plugin-job.contract.test.ts"
+Task: "T028 [US3] AI handoff integration tests in project-code/tests/integration/us3/ai-handoff.test.ts"
+
+Task: "T029 [US3] workflow AI/plugin/widget/public-page flows in project-code/src/core/workflow/{domain,application}/"
+Task: "T031 [US3] AI services in project-code/src/plugins/ai/application/"
+Task: "T032 [US3] Telegram services in project-code/src/plugins/telegram/application/"
 ```
 
 ---
@@ -193,20 +203,20 @@ Task: "T023 [US1] order/order-item models in project-code/src/core/commerce/orde
 
 ### MVP First (US1 only)
 
-1. Complete Phase 1 and Phase 2
-2. Complete Phase 3 (US1)
-3. Validate T027 E2E and US1 contract/integration tests
-4. Ship MVP slice
+1. Complete Phase 1 and Phase 2.
+2. Complete Phase 3 (US1).
+3. Run US1 contract/integration/E2E checks.
+4. Release MVP.
 
 ### Incremental Delivery
 
-1. Add US2 and validate member/permission/workflow isolation journeys
-2. Add US3 and validate public/chat/AI/plugin journeys
-3. Execute Phase 6 hardening and quickstart-wide validation
+1. Add US2, validate independently, release.
+2. Add US3, validate independently, release.
+3. Run Phase 6 hardening and full quickstart verification.
 
-### Less-Capable Model Execution Guidance
+### Guardrails
 
-- Complete tasks exactly in ID order unless marked [P]
-- Do not change file paths or architecture boundaries in task descriptions
-- Do not combine tasks; each task is intentionally small and explicit
-- Run the specific tests created in each story before moving to the next story
+- Preserve Clean Architecture and Core + Modules + Plugins boundaries.
+- Keep Prisma as ORM with Neon/PostgreSQL as source of truth.
+- Keep Clerk, Redis, and Vercel Queues behind adapters.
+- Do not add Drizzle, new infrastructure, or non-MVP features.
