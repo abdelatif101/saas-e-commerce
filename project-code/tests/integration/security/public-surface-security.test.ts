@@ -7,7 +7,7 @@ import { createCustomer } from "@/core/commerce/customers/application/create-cus
 import { createConversation } from "@/core/commerce/conversations/application/create-conversation";
 import { recordMemberAuditEvent } from "@/core/account/application/audit-member-actions";
 import { getPublicProductPage } from "@/core/commerce/products/application/get-public-product-page";
-import type { ConversationId, CustomerId, ProductId, WorkflowId } from "@/shared/contracts/core-types";
+import { createBrand, type AccountId, type ConversationId, type CustomerId, type MemberId, type ProductId, type WorkflowId } from "@/shared/contracts/core-types";
 
 const workflowId = "wf_sec_1" as WorkflowId;
 
@@ -95,10 +95,10 @@ describe("public surface security controls", () => {
     expect(() =>
       recordMemberAuditEvent({
         id: "audit_sec_1",
-        accountId: "acc_sec_1",
-        actorMemberId: "mem_sec_1",
+        accountId: createBrand<AccountId>("acc_sec_1"),
+        actorMemberId: createBrand<MemberId>("mem_sec_1"),
         action: "member.permission_assigned",
-        targetMemberId: "mem_sec_2",
+        targetMemberId: createBrand<MemberId>("mem_sec_2"),
         metadata: { apiSecret: "super-secret-token" },
       })
     ).toThrow("Must not store secrets in metadata");

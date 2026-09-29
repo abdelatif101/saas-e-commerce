@@ -1,7 +1,7 @@
 import { executeMerchantCommand } from "@/plugins/telegram/application/execute-merchant-command";
 import { PluginConnection } from "@/core/workflow/domain/plugin-connection";
 import { NextResponse } from "next/server";
-import type { Capability, MemberId, WorkflowId } from "@/shared/contracts/core-types";
+import { createBrand, type AccountId, type Capability, type MemberId, type WorkflowId } from "@/shared/contracts/core-types";
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       pluginConnection,
       actorMemberId: (body.actorMemberId ?? crypto.randomUUID()) as MemberId,
       workflowId: body.workflowId as WorkflowId,
-      accountId: body.accountId ?? "unknown",
+      accountId: createBrand<AccountId>(body.accountId ?? "unknown"),
       identityRef: body.identityRef ?? "telegram:user",
       capabilities: body.capabilities ?? [],
       workflowAccess: (body.workflowAccess ?? [body.workflowId]) as WorkflowId[],

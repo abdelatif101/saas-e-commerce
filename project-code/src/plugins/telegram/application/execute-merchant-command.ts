@@ -1,6 +1,6 @@
 import { authorizeOperation, type AuthorizationContext, type ResourceRequest } from "@/core/authorization/application/authorize-operation";
 import type { PluginConnection } from "@/core/workflow/domain/plugin-connection";
-import type { Capability, MemberId, WorkflowId } from "@/shared/contracts/core-types";
+import { createBrand, type AccountId, type Capability, type MemberId, type WorkflowId } from "@/shared/contracts/core-types";
 
 export interface PluginCommandPayload {
   command: string;
@@ -11,7 +11,7 @@ export interface ExecuteMerchantCommandInput {
   pluginConnection: PluginConnection;
   actorMemberId: MemberId;
   workflowId: WorkflowId;
-  accountId: string;
+  accountId: AccountId;
   identityRef: string;
   capabilities: Capability[];
   workflowAccess: WorkflowId[];
@@ -40,14 +40,14 @@ export function executeMerchantCommand(
 
   const authContext: AuthorizationContext = {
     identityRef: input.identityRef,
-    accountId: input.accountId,
+    accountId: createBrand<AccountId>(input.accountId),
     memberId: input.actorMemberId,
     capabilities: input.capabilities,
     workflowAccess: input.workflowAccess,
   };
 
   const resourceRequest: ResourceRequest = {
-    accountId: input.accountId,
+    accountId: createBrand<AccountId>(input.accountId),
     workflowId: input.workflowId,
     requiredCapability: input.requiredCapability,
   };

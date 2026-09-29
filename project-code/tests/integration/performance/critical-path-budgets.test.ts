@@ -8,6 +8,7 @@ import { createOrder } from "@/core/commerce/orders/application/create-order";
 import { authorizeOperation } from "@/core/authorization/application/authorize-operation";
 import type {
   AccountId,
+  Capability,
   CustomerId,
   MemberId,
   OrderId,
@@ -83,7 +84,7 @@ describe("Critical path performance budgets", () => {
       identityRef: "user_perf",
       accountId: "acc_perf_auth" as AccountId,
       memberId: "mem_perf_auth" as MemberId,
-      capabilities: ["order.manage", "product.manage"] as const,
+      capabilities: ["order.manage", "product.manage"] as Capability[],
       workflowAccess: ["wf_perf_auth"] as WorkflowId[],
     };
 
